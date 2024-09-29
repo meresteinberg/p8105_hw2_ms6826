@@ -3,3 +3,81 @@ title: "p8105_hw2_ms6826"
 output: github_document
 date: "2024-09-26"
 ---
+
+```{r}
+library(tidyverse)
+```
+
+## Problem 1
+
+```{r}
+nyc_df= 
+  read_csv(file="./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv", na = c(".", "NA", "")) |> 
+  janitor::clean_names() |> 
+  mutate(across(route1:route11, as.character)) |> 
+   mutate(
+    routes_served = paste(route1, route2, route3, route4, route5, route6, route6, route8, route9, route10, route11, sep = ", ")
+  ) |> 
+  mutate(routes_served = gsub(", NA", "", routes_served)) |> 
+  mutate(
+    entry = case_match(
+      entry,
+      "YES" ~ TRUE,
+      "NO" ~ FALSE
+    )) |> 
+  select(line, station_name, station_latitude, station_longitude, routes_served, entry, vending, entrance_type, ada) 
+nyc_df
+```
+#### This dataset contains information about each distinct NYC subway station (including the multiple entrances for each station). I imported the dataset and used the janitor::clean names function to change the column names to all lowercase/remove any spaces and the na=c() function makes sure any missing values will be labelled as "NA". I used the mutate function to combine the routes tables into one table that lists all of the routes served and also used the mutate function to convert the entry column from a character to a logical variable. I used the select function to only include information on the name of the train station, its specific location(latitude/longitude), the routes the station serves, the street or avenue the train line runs along, whether or not the train has vending machines for subway cards, the type of entrance to get to the subway (e.g, stairs, elevator, etc.), whether there is an entrance at that location (variable entry), and if the station is ADA compliant. The data appears more tidy than it did before. Since I did not retain  information on the entrance locations for each station (e.g., corner, entrance_location, etc.), however, some of the data lines appear to be the same without the entrance location information. The dimensions are 1868 columns x 9 rows.
+
+```{r}
+nyc_distinct_df=
+distinct(nyc_df, line, station_name, .keep_all = TRUE)
+```
+#### There are 465 distinct stations.
+
+```{r}
+  filter(nyc_distinct_df, ada=="TRUE")
+```
+#### There are 84 distinct stations that have ADA compliance.
+
+```{r}
+filter(nyc_df, vending=="NO", entry =="TRUE")
+```
+#### 69/1868 station entrances/exists have no vending but allow entrance.
+
+```{r}
+nyc_reformat= 
+  read_csv(file="./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv", na = c(".", "NA", "")) |> 
+  janitor::clean_names() |> 
+  mutate(across(route1:route11, as.character)) |>  
+  pivot_longer(
+    cols = route1:route11,
+    names_to = "route_number",
+    values_to = "route_name" ,
+    values_drop_na = TRUE,
+    names_prefix = "route"
+  ) 
+```
+
+```{r}
+nyc_reformat_dis=
+distinct(nyc_reformat, line, station_name, .keep_all = TRUE) |> 
+  filter(route_name =="A")
+```
+#### 60 distinct stations serve the A train
+
+```{r}
+nyc_reformat_dis=
+distinct(nyc_reformat, line, station_name, .keep_all = TRUE) |> 
+  filter(route_name =="A") |> 
+  filter(ada=="TRUE")
+```
+#### Of the 60 distinct stations that serve the A train, 17 of them are ADA compliant.
+
+
+## Problem 2
+
+
+
+
