@@ -90,7 +90,7 @@ Of the 60 distinct stations that serve the A train, 17 of them are ADA compliant
 Read/clean Mr. Trash Wheel dataset
 ```{r}
 mrtrash_df=
-  read_excel("data/202309 Trash Wheel Collection Data.xlsx", 1, range = "A2:N586") |>
+  read_excel("data/202409 Trash Wheel Collection Data.xlsx", 1, range = "A2:N586") |>
   janitor::clean_names() |> 
   mutate(across(year:date, as.character)) |> 
   mutate(sports_balls= round(sports_balls)) |> 
@@ -102,7 +102,7 @@ mrtrash_df=
 Read/clean Professor Trash Wheel dataset
 ```{r}
 protrash_df=
-  read_excel("data/202309 Trash Wheel Collection Data.xlsx", na = c("NA", "", "."), 2, range = "A2:M108") |> 
+  read_excel("data/202409 Trash Wheel Collection Data.xlsx", na = c("NA", "", "."), 2, range = "A2:M108") |> 
   janitor::clean_names() |> 
   mutate(across(year:date, as.character)) |> 
   mutate(dumpname= "proftrash") |> 
@@ -112,7 +112,7 @@ protrash_df=
 Read/clean Gwynnda Trash Wheel dataset
 ```{r}
 gwynndatrash_df=
-  read_excel("data/202309 Trash Wheel Collection Data.xlsx", na = c("NA", "", "."), 4, range = "A2:L157") |>
+  read_excel("data/202409 Trash Wheel Collection Data.xlsx", na = c("NA", "", "."), 4, range = "A2:L157") |>
   janitor::clean_names() |> 
   mutate(across(year:date, as.character)) |> 
   mutate(dumpname= "gwynnda") |> 
@@ -157,8 +157,7 @@ bakers_df=
     baker_occupation= str_to_lower(baker_occupation),
     hometown= str_to_lower(hometown)
   ) |> 
-  separate(baker_name, into = c("baker", "baker_name"),sep= " ") |> 
-  select(-baker_name)
+  separate(baker_name, into = c("baker", "baker_lastname"),sep= " ")
 
 ```
 
@@ -185,7 +184,6 @@ results_df=
 ```
 
 Checking for discrepancies
-
 ```{r}
 anti_join(bakes_df, bakers_df, by="baker")
 anti_join(results_df, bakers_df, by= "baker")
@@ -195,7 +193,6 @@ anti_join(bakes_df, results_df, by="baker")
 anti_join(bakes_df, results_df, by="series")
 ```
 
-Changing joanne's name to jo to be consistent with other two datasets. Making Diana NA if above episode 5.
 ```{r}
 results_df=
 results_df |> 
@@ -210,14 +207,14 @@ Combining datasets
 british_df=
    full_join(results_df, bakes_df, by= c("series", "episode", "baker")) |> 
   full_join(x=_, bakers_df, by=c("series", "baker")) |> 
-  select(baker, baker_age, series, episode, everything() )
+  select(baker, baker_lastname, baker_age, series, episode, everything() )
 
 write.csv(british_df, "data/british.csv")
 ```
-I made any missing values, unknowns, UNKNOWNS, NAs, etc. all NAs in bakes_df and results_df. I got rid of the quotes around jo's name in bakes_df and changed joanne to nickname jo in results_df. Also, since diana drops out in episode 5, I made "diana" "NA" if above episode 5 and removed those data points with drop_na in results_df. Also I separated the 'baker_name' variable to first ('baker') and last name ('baker_name') in bakers_df so 'baker' would be consistent with other datasets. The final dataset combines the three datasets, where I first joined results_df and bakes_df by their shared variables and then used this result to also join bakers_df by the variables all three datasets have in common ('series' and 'baker') and selected baker, baker_age, series, and episode to read first
+I made any missing values, unknowns, UNKNOWNS, NAs, etc. all NAs in bakes_df and results_df. I got rid of the quotes around jo's name in bakes_df and changed joanne to nickname jo in results_df. Also, since diana drops out in episode 5, I made "diana" "NA" if above episode 5 and removed those data points with drop_na in results_df. Also I separated the 'baker_name' variable to first ('baker') and last name ('baker_lastname') in bakers_df so 'baker' would be consistent with other datasets. The final dataset combines the three datasets, where I first joined results_df and bakes_df by their shared variables and then used this result to also join bakers_df by the variables all three datasets have in common ('series' and 'baker') and selected baker, baker_lastname, baker_age, series, and episode to read first.
 
 
-Create a reader-friendly table showing the star baker or winner of each episode in Seasons 5 through 10. Comment on this table – were there any predictable overall winners? Any surprises?
+Reader-friendly table  
 ```{r}
 british_df |> 
   filter(result %in% c("star baker", "winner"), series>4) |> 
@@ -225,6 +222,8 @@ british_df |>
   knitr::kable()
 ```
 I would have maybe expected richard to win since he had won star baker so many times. Since nadiya and candace both won star baker several times in their seasons, it makes sense that she won. Also, I am surprised david was a winner since he did not win star baker.
+
+
 
 Import, clean, tidy, and organize the viewership data
 ```{r}
@@ -251,7 +250,6 @@ viewers_df |>
   summarise(mean(series_5))
 ```
 Mean viewers for season 5 is 10.1.
-
 
 
 
