@@ -229,9 +229,7 @@ Import, clean, tidy, and organize the viewership data
 ```{r}
 viewers_df=
   read_csv(file="./data/viewers.csv", na = c("NA")) |> 
-  janitor::clean_names() |> 
-  mutate(across(c(series_1:series_10), round)) |> 
-  mutate(across(series_1:series_10, as.integer))
+  janitor::clean_names()
 ```
 
 Show first 10 rows
@@ -243,13 +241,13 @@ head(viewers_df, 10)
 viewers_df |> 
   summarise(mean(series_1, na.rm=TRUE))
 ```
-Mean viewers for season 1 is 2.83.
+Mean viewers for season 1 is 2.77.
 
 ```{r}
 viewers_df |> 
   summarise(mean(series_5))
 ```
-Mean viewers for season 5 is 10.1.
+Mean viewers for season 5 is 10.0.
 
 
 
